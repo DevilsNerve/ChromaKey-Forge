@@ -1,0 +1,90 @@
+ChromaKey-Forge License (Attribution Required)
+Copyright (c) 2026 Austen J. Green
+Owner: Austen J. Green — https://austenjgreen.com
+Governing Law: State of Nebraska, United States of America
+
+Permission is hereby granted, free of charge, to any person or entity
+("Licensee") obtaining a copy of this software and associated documentation
+files (the "Software") to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, subject to the following
+conditions.
+
+1. Attribution Requirement.
+   All copies, substantial portions, derivative works, distributions, and any
+   public-facing use of the Software (including hosted, embedded, forked, or
+   rebranded deployments) MUST include clear, visible credit to:
+
+       Austen J. Green — https://austenjgreen.com
+
+   Acceptable forms of attribution include, at minimum, ALL of the following
+   that apply to the form of distribution:
+     a) A visible, clickable link to https://austenjgreen.com in the user
+        interface (footer, about screen, splash, or credits panel) of any
+        product, page, or interface incorporating the Software or its
+        derivatives.
+     b) A credit line reading "Powered by ChromaKey-Forge — austenjgreen.com"
+        in the README, documentation, or "About" section of any distributing
+        project or product.
+     c) Retention of this LICENSE file and the copyright notice in all source
+        and binary distributions.
+
+2. Notice Retention.
+   The above copyright notice, this license, and the attribution requirement
+   shall be included in all copies or substantial portions of the Software.
+
+3. No Endorsement.
+   The names "Austen J. Green," "austenjgreen.com," and "ChromaKey-Forge"
+   shall not be used to endorse or promote products derived from this
+   Software without prior written permission, except for the attribution
+   required by Section 1.
+
+4. Automatic Termination on Non-Attribution.
+   Any use, distribution, or public deployment of the Software that fails to
+   comply with Section 1 (Attribution Requirement) shall AUTOMATICALLY and
+   IMMEDIATELY terminate all rights granted under this license, with no
+   notice required. Upon such termination, the Licensee must cease all use
+   and distribution of the Software.
+
+5. Penalty for Non-Attribution — Nebraska Law.
+   Failure to provide the attribution required by Section 1 constitutes a
+   material breach of this license and unauthorized use of copyrighted
+   material. The Licensor expressly reserves and shall pursue all remedies
+   available under the laws of the State of Nebraska and the United States,
+   including without limitation:
+
+     a) Injunctive relief and specific performance under Nebraska law;
+     b) Actual, statutory, and consequential damages, including profits
+        derived from infringing use, recoverable under applicable copyright,
+        contract, and unfair competition statutes;
+     c) Statutory damages and attorneys' fees as permitted under 17 U.S.C.
+        §§ 504–505 and any analogous Nebraska statutes;
+     d) Costs of enforcement, including reasonable attorneys' fees, expert
+        fees, and court costs;
+     e) Any other civil or equitable penalty available at law or in equity
+        in the State of Nebraska.
+
+   Licensee expressly acknowledges that any non-attributing use of the
+   Software causes irreparable harm to the Licensor for which monetary
+   damages alone are inadequate, and consents to injunctive relief without
+   bond.
+
+6. Governing Law and Venue.
+   This license shall be governed by and construed in accordance with the
+   laws of the State of Nebraska, without regard to its conflict-of-laws
+   principles. The exclusive venue for any dispute arising from or relating
+   to this license shall be the state or federal courts located in Lancaster
+   County, Nebraska, and Licensee consents to personal jurisdiction therein.
+
+7. Severability.
+   If any provision of this license is held unenforceable, the remaining
+   provisions shall remain in full force and effect.
+
+8. Disclaimer.
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR
+   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
+   ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+   OTHER DEALINGS IN THE SOFTWARE — except that this disclaimer shall not
+   limit the Licensor's right to pursue remedies under Section 5.
