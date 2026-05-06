@@ -1,8 +1,15 @@
 <!doctype html>
+<!--
+  ChromaKey-Forge — chroma key lab
+  Copyright (c) 2026 Austen J. Green — https://austenjgreen.com
+  Licensed under the ChromaKey-Forge License (Attribution Required).
+  Free to use provided austenjgreen.com is credited. Failure to attribute
+  voids the license; remedies pursued under Nebraska law. See LICENSE.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Purple → Alpha · Color-Bleed Tester</title>
+<title>ChromaKey-Forge — Chroma Key Lab</title>
 <style>
   :root{
     --bg:#0b0b10;
@@ -58,6 +65,8 @@
   details{margin-top:10px;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
   details summary{cursor:pointer;color:var(--muted)}
   code{background:#0e0e15;padding:1px 6px;border-radius:4px;color:#d8c2ff}
+  .credit{position:absolute;right:10px;bottom:8px;z-index:3;font-size:11px;letter-spacing:.06em;color:#cdb6ff;text-decoration:none;background:rgba(15,15,25,.55);padding:4px 8px;border-radius:6px;border:1px solid rgba(180,140,255,.25);backdrop-filter:blur(4px)}
+  .credit:hover{color:#fff;border-color:rgba(180,140,255,.6)}
 </style>
 </head>
 <body>
@@ -141,6 +150,7 @@
   <div class="stage checker" id="stage" style="--pulse:#ff3bd1">
     <div class="pulse" id="pulseEl"></div>
     <canvas id="out" width="1080" height="1080"></canvas>
+    <a class="credit" href="https://austenjgreen.com" target="_blank" rel="noopener">austenjgreen.com</a>
   </div>
 </div>
 
