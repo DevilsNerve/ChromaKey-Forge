@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Purple → Alpha · Color-Bleed Tester</title>
+<style>
+  :root{
+    --bg:#0b0b10;
+    --panel:#15151d;
+    --ink:#e9e9f1;
+    --muted:#9a9ab1;
+    --accent:#b56bff;
+    --line:#26263a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif}
+  .wrap{display:grid;grid-template-columns:340px 1fr;gap:16px;padding:16px;height:100vh}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;overflow:auto}
+  h1{font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px;color:var(--muted)}
+  h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:18px 0 8px;color:var(--muted)}
+  label{display:block;margin:8px 0 4px;color:var(--muted);font-size:12px}
+  input[type=range]{width:100%}
+  input[type=color]{width:100%;height:34px;border:1px solid var(--line);background:transparent;border-radius:8px;padding:2px}
+  input[type=file]{width:100%;color:var(--muted)}
+  select,button{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#1d1d29;color:var(--ink);cursor:pointer}
+  button.primary{background:var(--accent);border-color:transparent;color:#15001f;font-weight:600}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .val{float:right;color:var(--ink);font-variant-numeric:tabular-nums}
+  .stage{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;min-height:480px}
+  .stage canvas{max-width:100%;max-height:calc(100vh - 64px);display:block;position:relative;z-index:2;filter:drop-shadow(0 0 0 transparent)}
+  .pulse{position:absolute;inset:0;z-index:1;pointer-events:none}
+  .pulse::before,.pulse::after{
+    content:"";position:absolute;left:50%;top:50%;width:60%;aspect-ratio:1;border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, var(--pulse) 0%, transparent 60%);
+    filter:blur(20px);
+    animation:pulse 2.4s ease-in-out infinite;
+    mix-blend-mode:screen;
+  }
+  .pulse::after{animation-delay:1.2s;width:80%}
+  @keyframes pulse{
+    0%,100%{opacity:.35;transform:translate(-50%,-50%) scale(.9)}
+    50%{opacity:.95;transform:translate(-50%,-50%) scale(1.15)}
+  }
+  .checker{
+    background-image:
+      linear-gradient(45deg,#1a1a25 25%,transparent 25%),
+      linear-gradient(-45deg,#1a1a25 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#1a1a25 75%),
+      linear-gradient(-45deg,transparent 75%,#1a1a25 75%);
+    background-size:24px 24px;
+    background-position:0 0,0 12px,12px -12px,-12px 0;
+  }
+  .hint{color:var(--muted);font-size:12px;margin-top:6px}
+  .swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;border:1px solid var(--line);margin-right:6px}
+  .toolbar{display:flex;gap:8px;margin-top:10px}
+  .toolbar > *{flex:1}
+  details{margin-top:10px;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  details summary{cursor:pointer;color:var(--muted)}
+  code{background:#0e0e15;padding:1px 6px;border-radius:4px;color:#d8c2ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+    <h1>Purple → Alpha</h1>
+
+    <label>Source image</label>
+    <input id="file" type="file" accept="image/*">
+    <div class="hint">Drop the original PNG here, or paste it (Ctrl+V).</div>
+
+    <h2>Removal</h2>
+    <label>Mode
+      <select id="mode">
+        <option value="hue">Hue match (recommended)</option>
+        <option value="purple">Purple = min(R,B) − G</option>
+        <option value="picked">Pick a color from image</option>
+      </select>
+    </label>
+
+    <div id="pickedRow" style="display:none">
+      <label>Target color <input id="target" type="color" value="#a020f0"></label>
+      <button id="pickBtn" type="button">Eyedropper (click image)</button>
+    </div>
+
+    <label>Strength <span class="val" id="strengthV">1.00</span></label>
+    <input id="strength" type="range" min="0" max="2" step="0.01" value="1">
+
+    <label>Softness <span class="val" id="softV">0.40</span></label>
+    <input id="soft" type="range" min="0" max="1" step="0.01" value="0.4">
+
+    <label>Gamma <span class="val" id="gammaV">1.00</span></label>
+    <input id="gamma" type="range" min="0.3" max="3" step="0.01" value="1">
+
+    <label>Decontaminate (subtract residual purple) <span class="val" id="decontV">0.60</span></label>
+    <input id="decont" type="range" min="0" max="1" step="0.01" value="0.6">
+
+    <label>Hue tolerance° <span class="val" id="tolV">35</span></label>
+    <input id="tol" type="range" min="5" max="90" step="1" value="35">
+
+    <h2>Pulse</h2>
+    <div class="row">
+      <div>
+        <label>Pulse color</label>
+        <input id="pulse" type="color" value="#ff3bd1">
+      </div>
+      <div>
+        <label>Backdrop</label>
+        <input id="bg" type="color" value="#000000">
+      </div>
+    </div>
+
+    <label>Pulse speed (s) <span class="val" id="speedV">2.40</span></label>
+    <input id="speed" type="range" min="0.4" max="6" step="0.1" value="2.4">
+
+    <label>Pulse intensity <span class="val" id="intenV">1.00</span></label>
+    <input id="inten" type="range" min="0" max="2" step="0.01" value="1">
+
+    <label>Blur (px) <span class="val" id="blurV">20</span></label>
+    <input id="blur" type="range" min="0" max="80" step="1" value="20">
+
+    <details>
+      <summary>How transparency is computed</summary>
+      <div class="hint" style="margin-top:8px">
+        Each pixel's alpha is reduced by how purple it is. <br>
+        <b>Hue match</b>: angular distance from a target hue (default 285°), softened by saturation &amp; value. <br>
+        <b>Purple formula</b>: <code>p = max(0, min(R,B) − G)</code>; <code>α' = α · (1 − p · strength)</code>. <br>
+        <b>Decontaminate</b> subtracts the purple component from RGB so the remaining edges aren't tinted.
+      </div>
+    </details>
+
+    <div class="toolbar">
+      <button id="reset" type="button">Reset</button>
+      <button id="download" class="primary" type="button">Download PNG</button>
+    </div>
+    <div class="hint" style="margin-top:8px">
+      Tip: paste any image with <code>Ctrl+V</code>. Right-click the preview to save the live frame.
+    </div>
+  </div>
+
+  <div class="stage checker" id="stage" style="--pulse:#ff3bd1">
+    <div class="pulse" id="pulseEl"></div>
+    <canvas id="out" width="1080" height="1080"></canvas>
+  </div>
+</div>
+
+<script>
+const $ = (s)=>document.querySelector(s);
+const fileEl=$("#file"), out=$("#out"), ctx=out.getContext("2d",{willReadFrequently:true});
+const stage=$("#stage"), pulseEl=$("#pulseEl");
+const ids=["strength","soft","gamma","decont","tol","speed","inten","blur"];
+ids.forEach(id=>{
+  const el=$("#"+id), v=$("#"+id+"V");
+  const fmt=()=>v.textContent=(+el.value).toFixed(id==="tol"||id==="blur"?0:2);
+  el.addEventListener("input",()=>{ fmt(); apply(); });
+  fmt();
+});
+$("#mode").addEventListener("change",e=>{
+  $("#pickedRow").style.display=e.target.value==="picked"?"":"none";
+  apply();
+});
+$("#target").addEventListener("input",apply);
+$("#pulse").addEventListener("input",updatePulse);
+$("#bg").addEventListener("input",updateBg);
+$("#speed").addEventListener("input",updatePulse);
+$("#inten").addEventListener("input",updatePulse);
+$("#blur").addEventListener("input",updatePulse);
+$("#reset").addEventListener("click",()=>{
+  const d={strength:1,soft:0.4,gamma:1,decont:0.6,tol:35,speed:2.4,inten:1,blur:20};
+  Object.entries(d).forEach(([k,v])=>{ $("#"+k).value=v; $("#"+k+"V").textContent=(+v).toFixed(k==="tol"||k==="blur"?0:2); });
+  $("#mode").value="hue";
+  $("#pickedRow").style.display="none";
+  apply(); updatePulse(); updateBg();
+});
+$("#download").addEventListener("click",()=>{
+  const a=document.createElement("a");
+  a.download="image-alpha.png";
+  a.href=out.toDataURL("image/png");
+  a.click();
+});
+
+let img=null, srcData=null;
+
+function loadFromBlob(blob){
+  const url=URL.createObjectURL(blob);
+  const i=new Image();
+  i.onload=()=>{
+    img=i;
+    out.width=i.naturalWidth; out.height=i.naturalHeight;
+    const tmp=document.createElement("canvas");
+    tmp.width=i.naturalWidth; tmp.height=i.naturalHeight;
+    const tctx=tmp.getContext("2d");
+    tctx.drawImage(i,0,0);
+    srcData=tctx.getImageData(0,0,tmp.width,tmp.height);
+    apply();
+    URL.revokeObjectURL(url);
+  };
+  i.src=url;
+}
+
+fileEl.addEventListener("change",e=>{ if(e.target.files[0]) loadFromBlob(e.target.files[0]); });
+window.addEventListener("paste",e=>{
+  const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith("image/"));
+  if(it) loadFromBlob(it.getAsFile());
+});
+stage.addEventListener("dragover",e=>e.preventDefault());
+stage.addEventListener("drop",e=>{
+  e.preventDefault();
+  const f=e.dataTransfer.files[0];
+  if(f) loadFromBlob(f);
+});
+
+// Eyedropper
+let picking=false;
+$("#pickBtn").addEventListener("click",()=>{ picking=true; out.style.cursor="crosshair"; });
+out.addEventListener("click",e=>{
+  if(!picking||!srcData) return;
+  const r=out.getBoundingClientRect();
+  const x=Math.floor((e.clientX-r.left)*(out.width/r.width));
+  const y=Math.floor((e.clientY-r.top)*(out.height/r.height));
+  const i=(y*srcData.width+x)*4;
+  const [R,G,B]=[srcData.data[i],srcData.data[i+1],srcData.data[i+2]];
+  $("#target").value="#"+[R,G,B].map(v=>v.toString(16).padStart(2,"0")).join("");
+  picking=false; out.style.cursor="default";
+  apply();
+});
+
+function hexToRgb(h){const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function rgbToHsv(r,g,b){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+  let h=0;
+  if(d){
+    if(max===r) h=((g-b)/d)%6;
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h*=60; if(h<0) h+=360;
+  }
+  return[h,max?d/max:0,max];
+}
+function angDist(a,b){let d=Math.abs(a-b)%360;return d>180?360-d:d;}
+
+function apply(){
+  if(!srcData) return;
+  const w=srcData.width,h=srcData.height;
+  const dst=ctx.createImageData(w,h);
+  const s=+$("#strength").value, soft=+$("#soft").value, gm=+$("#gamma").value;
+  const dec=+$("#decont").value, tol=+$("#tol").value;
+  const mode=$("#mode").value;
+  const [tR,tG,tB]=hexToRgb($("#target").value);
+  const [tH]=rgbToHsv(tR,tG,tB);
+  const purpleH = mode==="hue" ? 285 : tH;
+
+  const sd=srcData.data, dd=dst.data;
+  for(let i=0;i<sd.length;i+=4){
+    let R=sd[i],G=sd[i+1],B=sd[i+2],A=sd[i+3];
+    let mask=0;
+    if(mode==="purple"){
+      const p=Math.max(0,Math.min(R,B)-G);
+      mask=p/255;
+    }else{
+      const [H,S,V]=rgbToHsv(R,G,B);
+      const targetH = mode==="picked" ? tH : purpleH;
+      const dH=angDist(H,targetH);
+      const hueScore = Math.max(0, 1 - dH/tol);
+      mask = hueScore * S * V;
+    }
+    // gamma & strength
+    let m = Math.pow(mask, gm) * s;
+    // softness widens the falloff
+    m = Math.min(1, m + (mask>0 ? soft*mask : 0));
+    let aOut = A * (1 - Math.min(1,m));
+    // decontaminate: remove purple cast on remaining pixels
+    if(dec>0 && m>0){
+      // amount of "purple component" present
+      const p=Math.max(0,Math.min(R,B)-G);
+      R = Math.max(0, R - p*dec);
+      B = Math.max(0, B - p*dec);
+    }
+    dd[i]=R; dd[i+1]=G; dd[i+2]=B; dd[i+3]=aOut;
+  }
+  ctx.clearRect(0,0,w,h);
+  ctx.putImageData(dst,0,0);
+}
+
+function updatePulse(){
+  const c=$("#pulse").value;
+  stage.style.setProperty("--pulse",c);
+  const speed=+$("#speed").value;
+  const inten=+$("#inten").value;
+  const blur=+$("#blur").value;
+  pulseEl.style.setProperty("--blur",blur+"px");
+  // rebuild keyframe by adjusting CSS animation duration & opacity
+  pulseEl.style.animation="none";
+  // eslint-disable-next-line no-unused-expressions
+  pulseEl.offsetHeight;
+  pulseEl.style.animation="";
+  document.documentElement.style.setProperty("--pulseSpeed", speed+"s");
+  pulseEl.querySelectorAll(":scope")[0]; // noop
+  // direct style overrides via CSS variables on pseudo-elements — restate rule:
+  const styleId="dyn-pulse-style";
+  let st=document.getElementById(styleId);
+  if(!st){ st=document.createElement("style"); st.id=styleId; document.head.appendChild(st); }
+  st.textContent=`
+    .pulse::before,.pulse::after{
+      animation-duration:${speed}s;
+      filter:blur(${blur}px);
+      opacity:1;
+    }
+    .pulse::before{background:radial-gradient(circle, ${c} 0%, transparent ${60*inten}%)}
+    .pulse::after {background:radial-gradient(circle, ${c} 0%, transparent ${75*inten}%)}
+  `;
+}
+function updateBg(){ stage.style.background=$("#bg").value; stage.classList.remove("checker"); }
+
+updatePulse();
+</script>
+</body>
+</html>
