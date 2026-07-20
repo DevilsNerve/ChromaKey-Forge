@@ -226,12 +226,22 @@ $("#speed").addEventListener("input",updatePulse);
 $("#inten").addEventListener("input",updatePulse);
 $("#blur").addEventListener("input",updatePulse);
 $("#reset").addEventListener("click",()=>{
-  const d={strength:1,soft:0.4,gamma:1,decont:0.6,tol:35,speed:2.4,inten:1,blur:20};
-  Object.entries(d).forEach(([k,v])=>{ $("#"+k).value=v; $("#"+k+"V").textContent=(+v).toFixed(k==="tol"||k==="blur"?0:2); });
-  $("#mode").value="hue";
+  ids.forEach(id=>{
+    const control=$("#"+id);
+    control.value=control.defaultValue;
+    $("#"+id+"V").textContent=(+control.value).toFixed(id==="tol"||id==="blur"?0:2);
+  });
+  ["target","pulse","bg"].forEach(id=>{ $("#"+id).value=$("#"+id).defaultValue; });
+  $("#mode").selectedIndex=0;
   $("#pickedRow").style.display="none";
+  picking=false;
+  out.style.cursor="default";
   cancelScheduledApply();
-  apply(); updatePulse(); updateBg();
+  stage.style.background="";
+  stage.classList.add("checker");
+  apply();
+  updatePulse();
+  setStatus(srcData?"Controls reset to their defaults.":"Controls reset. Choose, drop, or paste an image to begin.");
 });
 downloadBtn.addEventListener("click",()=>{
   if(!srcData) return;
