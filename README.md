@@ -17,6 +17,15 @@ all client-side.
 4. Pick your pulse color and backdrop.
 5. **Download PNG** to export the keyed image.
 
+## Development
+
+The pixel-processing core has no runtime dependencies. Run its deterministic
+tests with Node.js 20 or newer:
+
+```bash
+npm test
+```
+
 ## License
 
 ChromaKey-Forge is licensed under the
