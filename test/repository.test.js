@@ -29,6 +29,11 @@ test("local script references resolve",()=>{
   }
 });
 
+test("Pages deployment has a static entry point",()=>{
+  assert.ok(fs.existsSync(path.join(root,"index.html")));
+  assert.ok(fs.existsSync(path.join(root,".nojekyll")));
+});
+
 test("license surfaces consistently select AGPL-3.0-only",()=>{
   const packageMetadata=JSON.parse(read("package.json"));
   const readme=read("README.md");
