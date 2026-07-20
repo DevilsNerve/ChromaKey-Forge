@@ -9,6 +9,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ChromaKey-Forge — Chroma Key Lab</title>
 <style>
   :root{
@@ -20,8 +21,9 @@
     --line:#26263a;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif}
-  .wrap{display:grid;grid-template-columns:340px 1fr;gap:16px;padding:16px;height:100vh}
+  html{color-scheme:dark}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif}
+  .wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;padding:16px;min-height:100vh;height:100dvh}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;overflow:auto}
   h1{font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px;color:var(--muted)}
   h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:18px 0 8px;color:var(--muted)}
@@ -31,8 +33,11 @@
   input[type=file]{width:100%;color:var(--muted)}
   select,button{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#1d1d29;color:var(--ink);cursor:pointer}
   button.primary{background:var(--accent);border-color:transparent;color:#15001f;font-weight:600}
+  :is(input,select,button,summary,.credit):focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .val{float:right;color:var(--ink);font-variant-numeric:tabular-nums}
+  .control-label{display:flex;justify-content:space-between;align-items:baseline;margin:8px 0 4px;gap:8px}
+  .control-label label{margin:0}
+  .val{color:var(--ink);font-variant-numeric:tabular-nums}
   .stage{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;min-height:480px}
   .stage canvas{max-width:100%;max-height:calc(100vh - 64px);display:block;position:relative;z-index:2;filter:drop-shadow(0 0 0 transparent)}
   .pulse{position:absolute;inset:0;z-index:1;pointer-events:none}
@@ -67,65 +72,74 @@
   code{background:#0e0e15;padding:1px 6px;border-radius:4px;color:#d8c2ff}
   .credit{position:absolute;right:10px;bottom:8px;z-index:3;font-size:11px;letter-spacing:.06em;color:#cdb6ff;text-decoration:none;background:rgba(15,15,25,.55);padding:4px 8px;border-radius:6px;border:1px solid rgba(180,140,255,.25);backdrop-filter:blur(4px)}
   .credit:hover{color:#fff;border-color:rgba(180,140,255,.6)}
+  @media (max-width:760px){
+    .wrap{grid-template-columns:minmax(0,1fr);height:auto;min-height:100dvh}
+    .panel{overflow:visible}
+    .stage{min-height:50dvh}
+    .stage canvas{max-height:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .pulse::before,.pulse::after{animation:none}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <div class="panel">
     <h1>Purple → Alpha</h1>
 
-    <label>Source image</label>
-    <input id="file" type="file" accept="image/*">
-    <div class="hint">Drop the original PNG here, or paste it (Ctrl+V).</div>
+    <label for="file">Source image</label>
+    <input id="file" type="file" accept="image/*" aria-describedby="fileHint">
+    <div class="hint" id="fileHint">Drop the original PNG here, or paste it (Ctrl+V).</div>
 
     <h2>Removal</h2>
-    <label>Mode
-      <select id="mode">
-        <option value="hue">Hue match (recommended)</option>
-        <option value="purple">Purple = min(R,B) − G</option>
-        <option value="picked">Pick a color from image</option>
-      </select>
-    </label>
+    <label for="mode">Mode</label>
+    <select id="mode">
+      <option value="hue">Hue match (recommended)</option>
+      <option value="purple">Purple = min(R,B) − G</option>
+      <option value="picked">Pick a color from image</option>
+    </select>
 
     <div id="pickedRow" style="display:none">
-      <label>Target color <input id="target" type="color" value="#a020f0"></label>
+      <label for="target">Target color</label>
+      <input id="target" type="color" value="#a020f0">
       <button id="pickBtn" type="button">Eyedropper (click image)</button>
     </div>
 
-    <label>Strength <span class="val" id="strengthV">1.00</span></label>
+    <div class="control-label"><label for="strength">Strength</label><output class="val" id="strengthV" for="strength">1.00</output></div>
     <input id="strength" type="range" min="0" max="2" step="0.01" value="1">
 
-    <label>Softness <span class="val" id="softV">0.40</span></label>
+    <div class="control-label"><label for="soft">Softness</label><output class="val" id="softV" for="soft">0.40</output></div>
     <input id="soft" type="range" min="0" max="1" step="0.01" value="0.4">
 
-    <label>Gamma <span class="val" id="gammaV">1.00</span></label>
+    <div class="control-label"><label for="gamma">Gamma</label><output class="val" id="gammaV" for="gamma">1.00</output></div>
     <input id="gamma" type="range" min="0.3" max="3" step="0.01" value="1">
 
-    <label>Decontaminate (subtract residual purple) <span class="val" id="decontV">0.60</span></label>
+    <div class="control-label"><label for="decont">Decontaminate (subtract residual purple)</label><output class="val" id="decontV" for="decont">0.60</output></div>
     <input id="decont" type="range" min="0" max="1" step="0.01" value="0.6">
 
-    <label>Hue tolerance° <span class="val" id="tolV">35</span></label>
+    <div class="control-label"><label for="tol">Hue tolerance°</label><output class="val" id="tolV" for="tol">35</output></div>
     <input id="tol" type="range" min="5" max="90" step="1" value="35">
 
     <h2>Pulse</h2>
     <div class="row">
       <div>
-        <label>Pulse color</label>
+        <label for="pulse">Pulse color</label>
         <input id="pulse" type="color" value="#ff3bd1">
       </div>
       <div>
-        <label>Backdrop</label>
+        <label for="bg">Backdrop</label>
         <input id="bg" type="color" value="#000000">
       </div>
     </div>
 
-    <label>Pulse speed (s) <span class="val" id="speedV">2.40</span></label>
+    <div class="control-label"><label for="speed">Pulse speed (s)</label><output class="val" id="speedV" for="speed">2.40</output></div>
     <input id="speed" type="range" min="0.4" max="6" step="0.1" value="2.4">
 
-    <label>Pulse intensity <span class="val" id="intenV">1.00</span></label>
+    <div class="control-label"><label for="inten">Pulse intensity</label><output class="val" id="intenV" for="inten">1.00</output></div>
     <input id="inten" type="range" min="0" max="2" step="0.01" value="1">
 
-    <label>Blur (px) <span class="val" id="blurV">20</span></label>
+    <div class="control-label"><label for="blur">Blur (px)</label><output class="val" id="blurV" for="blur">20</output></div>
     <input id="blur" type="range" min="0" max="80" step="1" value="20">
 
     <details>
@@ -149,10 +163,10 @@
 
   <div class="stage checker" id="stage" style="--pulse:#ff3bd1">
     <div class="pulse" id="pulseEl"></div>
-    <canvas id="out" width="1080" height="1080"></canvas>
-    <a class="credit" href="https://austenjgreen.com" target="_blank" rel="noopener">austenjgreen.com</a>
+    <canvas id="out" width="1080" height="1080" role="img" aria-label="Processed image preview">Processed image preview.</canvas>
+    <a class="credit" href="https://austenjgreen.com" target="_blank" rel="noopener" aria-label="Austen J. Green website (opens in a new tab)">austenjgreen.com</a>
   </div>
-</div>
+</main>
 
 <script>
 const $ = (s)=>document.querySelector(s);
