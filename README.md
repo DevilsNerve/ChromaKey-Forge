@@ -1,6 +1,7 @@
 # ChromaKey-Forge
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+[![Validate](https://github.com/DevilsNerve/ChromaKey-Forge/actions/workflows/validate.yml/badge.svg)](https://github.com/DevilsNerve/ChromaKey-Forge/actions/workflows/validate.yml)
 
 A browser-based chroma key lab. Drop in any PNG and ChromaKey-Forge strips a
 target hue (default purple) to alpha based on saturation, value, and hue
