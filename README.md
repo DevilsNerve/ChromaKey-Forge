@@ -9,7 +9,7 @@ distance — then bleeds your chosen pulse color through the cutout in real
 time. Eyedropper, decontamination, and one-click PNG export. No upload,
 all client-side.
 
-**Live demo:** https://<you>.github.io/chromakey-forge/
+**Live demo:** https://devilsnerve.github.io/ChromaKey-Forge/
 
 ## Usage
 1. Open `index.html` in any modern browser.
