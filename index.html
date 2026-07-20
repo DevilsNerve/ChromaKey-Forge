@@ -186,18 +186,40 @@ function setImageActionsEnabled(enabled){
   pickBtn.disabled=!enabled;
   downloadBtn.disabled=!enabled;
 }
+const pixelControlIds=new Set(["strength","soft","gamma","decont","tol"]);
 const ids=["strength","soft","gamma","decont","tol","speed","inten","blur"];
+let applyFrame=0;
+function cancelScheduledApply(){
+  if(!applyFrame) return;
+  cancelAnimationFrame(applyFrame);
+  applyFrame=0;
+}
+function scheduleApply(){
+  if(!srcData||applyFrame) return;
+  applyFrame=requestAnimationFrame(()=>{
+    applyFrame=0;
+    apply();
+  });
+}
+function flushApply(){
+  if(!applyFrame) return;
+  cancelScheduledApply();
+  apply();
+}
 ids.forEach(id=>{
   const el=$("#"+id), v=$("#"+id+"V");
   const fmt=()=>v.textContent=(+el.value).toFixed(id==="tol"||id==="blur"?0:2);
-  el.addEventListener("input",()=>{ fmt(); apply(); });
+  el.addEventListener("input",()=>{
+    fmt();
+    if(pixelControlIds.has(id)) scheduleApply();
+  });
   fmt();
 });
 $("#mode").addEventListener("change",e=>{
   $("#pickedRow").style.display=e.target.value==="picked"?"":"none";
-  apply();
+  scheduleApply();
 });
-$("#target").addEventListener("input",apply);
+$("#target").addEventListener("input",scheduleApply);
 $("#pulse").addEventListener("input",updatePulse);
 $("#bg").addEventListener("input",updateBg);
 $("#speed").addEventListener("input",updatePulse);
@@ -208,10 +230,12 @@ $("#reset").addEventListener("click",()=>{
   Object.entries(d).forEach(([k,v])=>{ $("#"+k).value=v; $("#"+k+"V").textContent=(+v).toFixed(k==="tol"||k==="blur"?0:2); });
   $("#mode").value="hue";
   $("#pickedRow").style.display="none";
+  cancelScheduledApply();
   apply(); updatePulse(); updateBg();
 });
 downloadBtn.addEventListener("click",()=>{
   if(!srcData) return;
+  flushApply();
   const token=loadToken;
   downloadBtn.disabled=true;
   setStatus("Preparing PNG…");
@@ -241,6 +265,7 @@ function loadFromBlob(blob){
   }
   const token=++loadToken;
   const name=blob.name||"pasted image";
+  cancelScheduledApply();
   setImageActionsEnabled(false);
   setStatus(`Loading ${name}…`);
   const url=URL.createObjectURL(blob);
